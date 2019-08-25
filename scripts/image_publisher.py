@@ -11,13 +11,10 @@ bridge = CvBridge()
 pub = rospy.Publisher('camera/image',Image,queue_size=1)
 cap = cv2.VideoCapture(0)
  
-rate = rospy.Rate(10)
+rate = rospy.Rate(20)
 while not rospy.is_shutdown():
     # Capture frame-by-frame
-    ret, frame = cap.read()
-    #cv2.imshow('frame', frame)
-    #if cv2.waitKey(1) & 0xFF == ord('q'):
-       # break 
+    ret, frame = cap.read()   
     # Check if grabbed frame is actually full with some content
     if ret:
         try:

@@ -18,8 +18,9 @@ close = False
 """haar classifier from https://github.com/markgaynor/stopsigns.git"""
 """lbp classifier from https://github.com/ojcodes/StopSignDetection.git"""
 def detect_stop(classifier, frame):
-    #Load the classifier and read the image.
+    #Load the classifier
     classifier = cv2.CascadeClassifier(classifier)
+    # convert the frame to black and white (needed by "detectMultiScale")
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     # Detect any stop signs in the image using the classifier at various scales.
     stop_signs = classifier.detectMultiScale(gray, SCALE_FACTOR, MIN_NEIGHBOURS)
@@ -27,13 +28,14 @@ def detect_stop(classifier, frame):
 
 def callback(msg):
     close = False
-    try:
+    try: #Try converting the image from the sensor_msg/image format to an opencv compatible format
         frame = bridge.imgmsg_to_cv2(msg, "bgr8")
     except CvBridgeError as e:
         print(e)
-    if(args["classifier"]=="lbp"):
+    if(args["classifier"]=="lbp"): #use lbp cascades
         stop_signs = detect_stop("stopsign_classifier_lbp.xml", frame)
-    else:
+        print("lbp")
+    else: #use haar cascades
         stop_signs = detect_stop("stopsign_classifier_haar.xml", frame) 
     vel_msg = Twist()
     for (x,y,w,h) in stop_signs:
@@ -41,13 +43,13 @@ def callback(msg):
         if w > CLOSE_WIDTH:
             close = True
             cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
-    cv2.imshow('frame', frame)
+    cv2.imshow('frame', frame) #show frame
     if cv2.waitKey(1) & 0xFF == ord('q'):
         quit()
-    if len(stop_signs) > 0 and close == True:
+    if len(stop_signs) > 0 and close == True: #if stop sign detected and close enough -> stop the turtle
         vel_msg.linear.x = 0
         vel_msg.angular.z = 0
-    else:
+    else: 
         vel_msg.linear.x = LINEAR_VEL
         vel_msg.angular.z = ANGULAR_VEL
     vel_msg.angular.x = 0
@@ -56,15 +58,15 @@ def callback(msg):
     vel_msg.angular.y = 0
     pub.publish(vel_msg)
 
-rospy.init_node('stop_sign_detection', anonymous=True)
-bridge = CvBridge()
-ap = argparse.ArgumentParser()
+rospy.init_node('stop_sign_detection', anonymous=True) #initialise ros node
+bridge = CvBridge() #initialise cv_bridge
+ap = argparse.ArgumentParser() 
 ap.add_argument("-c", "--classifier", required=True, choices=["haar", "lbp"], help="which classifier?(haar(more accurate) or lbp(faster))")
-args = vars(ap.parse_args())
-pub = rospy.Publisher("/turtle1/cmd_vel", Twist, queue_size=1)
-sub = rospy.Subscriber('camera/image', Image, callback)
+args = vars(ap.parse_args()) #read arguments
+pub = rospy.Publisher("/turtle1/cmd_vel", Twist, queue_size=1) #publish to /turtle1/cmd_vel topic
+sub = rospy.Subscriber('camera/image', Image, callback) #subscribe to camera/image topic
 
-rospy.spin()        
+rospy.spin() #keep python from exiting before ending node       
        
 
 
