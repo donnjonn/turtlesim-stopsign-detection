@@ -1,3 +1,6 @@
+cd ../../..
+catkin_make
+cd src/stop_sign_detection/scripts
 echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
 source ~/.bashrc
 source ../../../devel/setup.bash
