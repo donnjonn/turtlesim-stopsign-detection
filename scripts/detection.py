@@ -34,7 +34,6 @@ def callback(msg):
         print(e)
     if(args["classifier"]=="lbp"): #use lbp cascades
         stop_signs = detect_stop("stopsign_classifier_lbp.xml", frame)
-        print("lbp")
     else: #use haar cascades
         stop_signs = detect_stop("stopsign_classifier_haar.xml", frame) 
     vel_msg = Twist()
